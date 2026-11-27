@@ -6,6 +6,7 @@ char *choices[] = {
     "pwd  - Display the full path of the current folder location",
     "cp   - Duplicate files from one location to another",
     "grep - Search text or command outputs for specific keywords",
+    "echo - Print text to standard output",
     "exit - Exit the program"
 };
 int n_choices = sizeof(choices) / sizeof(char *);
@@ -63,7 +64,12 @@ int main() {
                     run_cp();
                     initscr();
                     print_menu(my_menu_win,highlight);
-                }else if(highlight == 6) { // 'exit' ကို ရွေးလျှင်
+                }else if(highlight ==6){
+                    endwin();
+                    run_echo();
+                    initscr();
+                    print_menu(my_menu_win,highlight);
+                }else if(highlight == n_choices) { // 'exit' ကို ရွေးလျှင်
                     choice = highlight;
                 } else {
                     endwin();
@@ -79,10 +85,10 @@ int main() {
                 break;
         }
         print_menu(my_menu_win, highlight);
-        if(choice == 6) break;
+        if(choice == n_choices) break;
     }
     
     endwin();
     printf("프로그램을 종료합니다.\n");
     return 0;
-}
+} 

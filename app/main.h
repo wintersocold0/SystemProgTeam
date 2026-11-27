@@ -25,3 +25,4 @@ void print_menu(WINDOW *,int);
 void run_ls();
 void run_cd();
 void run_cp();
+void run_echo();
