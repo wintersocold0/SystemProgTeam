@@ -30,6 +30,8 @@ void run_mkdir();
 void run_rmdir();
 void run_mv();
 void run_rm();
+void run_echo();
+
 
 #define CD_MAX_ITEMS 256
 

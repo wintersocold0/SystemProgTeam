@@ -14,7 +14,8 @@ OBJS=$(OBJ_DIR)/main.o \
 	$(OBJ_DIR)/run_mkdir.o \
 	$(OBJ_DIR)/run_rmdir.o \
 	$(OBJ_DIR)/run_mv.o \
-	$(OBJ_DIR)/run_rm.o
+	$(OBJ_DIR)/run_rm.o \
+	$(OBJ_DIR)/run_echo.o
 
 # 1. 최종 실행 파일 생성
 all: $(TARGET)
@@ -63,6 +64,10 @@ $(OBJ_DIR)/run_rm.o: app/main.h lib/run_rm.c
 	@mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c lib/run_rm.c -o $(OBJ_DIR)/run_rm.o -lncursesw
 
+$(OBJ_DIR)/run_echo.o: app/main.h lib/run_echo.c
+	@mkdir -p $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c lib/run_echo.c -o $(OBJ_DIR)/run_echo.o
+	
 # 3. clean 작업: 폴더를 삭제함 
 # (-r 옵션: 폴더 내부까지 삭제)
 .PHONY: clean

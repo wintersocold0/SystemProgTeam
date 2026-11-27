@@ -9,6 +9,7 @@ char *choices[] = {
     "rmdir - Remove an empty directory",
     "mv   - Move or rename files and folders",
     "rm   - Delete files or folders",
+    "echo - Display text in the terminal",
     "exit - Exit the program"
 };
 int n_choices = sizeof(choices) / sizeof(char *);
@@ -144,7 +145,10 @@ int main() {
                 }else if (highlight == 8) { // rm
                     run_rm();
                     my_menu_win = recreate_menu_win(my_menu_win);
-                }else if (highlight == 9) { // exit
+                }else if (highlight == 9) { // echo
+                    run_echo();
+                    my_menu_win = recreate_menu_win(my_menu_win);
+                }else if (highlight == n_choices) { // exit
                     choice = highlight;
                 } else {
                     // pwd or grep (not implemented yet)
@@ -178,4 +182,4 @@ int main() {
     endwin();
     printf("프로그램을 종료합니다.\n");
     return 0;
-}
+} 
