@@ -1,18 +1,17 @@
 #include "main.h"
 
 void run_ls() {
-    WINDOW *sub_win;
+    WINDOW *sub_win=recreate_menu_win(NULL);
     int highlight = 1;
     int c;
-    // Checkbox အခြေအနေများ (-l, -a, -h)
-    int opt_l = 1; // Default အနေဖြင့် အမှန်ခြစ်ပြီး
+    // Checkbox (-l, -a, -h)
+    int opt_l = 1; // Default selected
     int opt_a = 0;
     int opt_h = 1;
 
-    sub_win = newwin(30, 100, 3, 25);
-    keypad(sub_win, TRUE);
 
     while(1) {
+        werase(sub_win);
         box(sub_win, 0, 0);
         mvwprintw(sub_win, 0, 4, " ls - File List Options ");
         
@@ -43,6 +42,10 @@ void run_ls() {
 
         c = wgetch(sub_win);
         switch(c) {
+            case KEY_RESIZE:
+                sub_win = recreate_menu_win(sub_win);
+                print_menu(sub_win, highlight);
+                continue;
             case KEY_UP:
                 if(highlight > 1) highlight--;
                 break;
@@ -64,8 +67,7 @@ void run_ls() {
                         if(opt_h) strcat(cmd, "h");
                     }
                     strcat(cmd, " .");
-
-                    // Ncurses ကို ခေတ္တရပ်ပြီး Terminal ပုံစံဖြင့် Command Run ပြခြင်း
+                    //stop Ncurses temporarily to run the command in terminal mode
                     endwin();
                     printf("\n[실행할 명령어]: %s\n", cmd);
                     printf("----------------------------------------\n");
@@ -73,12 +75,12 @@ void run_ls() {
                     printf("----------------------------------------\n\n");
                     printf("계속하려면 아무 키나 누르세요...");
                     getchar();
+                    // Resume Ncurses
                     
-                    // Ncurses သို့ ပြန်ဝင်ရန်
                     refresh();
                 }
                 break;
-            case 27: // Esc နှိပ်လျှင် Main Menu သို့ ပြန်သွားရန်
+            case 27: // if user presses Esc, return to main menu
                 delwin(sub_win);
                 return;
         }
