@@ -1,160 +1,177 @@
 #include "main.h"
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/stat.h>
 
 void run_cp() {
-    WINDOW *cp_win;
-    char src_path[256] = "";
-    char dest_path[256] = "";
+    WINDOW *cp_win=recreate_menu_win(NULL);
+    char src_input[256] = "";
+    char dest_input[256] = "";
+    char resolved_src[512] = "";
+    char resolved_dest[512] = "";
     char cwd[1025] = "";
-    
-    // Create a pop-up window (height, width, start_y, start_x)
-    cp_win = newwin(30, 100, 3, 25);
-    keypad(cp_win, TRUE);
-    
+
+    int win_width,win_height;
+    getmaxyx(cp_win, win_height, win_width);
+    win_height = win_height;
     while (1) {
         werase(cp_win);
         box(cp_win, 0, 0);
         mvwprintw(cp_win, 0, 4, " Copy File (CP) ");
-        
+
         if (getcwd(cwd, sizeof(cwd)) != NULL) {
-            mvwprintw(cp_win, 3, 3, "Current Path: %s", cwd);
+            mvwprintw(cp_win, 2, 3, "Current Path: %s", cwd);
         }
-        
-        // Instructions and input prompts (Added Esc to exit hint)
-        mvwprintw(cp_win, 6, 3, "Enter source file path (or type 'exit' / press Esc to quit):");
-        mvwprintw(cp_win, 7, 3, "Source > ");
-        
-        mvwprintw(cp_win, 10, 3, "Enter destination path or directory:");
-        mvwprintw(cp_win, 11, 3, "Dest   > ");
+
+        mvwprintw(cp_win, 4, 3, "--- [ Current Directory (Folders & Files) ] ---");
+
+        CdFileItem items[CD_MAX_ITEMS];
+        int max_name_len = 0;
+        int n_items = load_current_dir_items(items, CD_MAX_ITEMS, &max_name_len);
+        draw_dir_items(cp_win, win_width, 6, 3, items, n_items, max_name_len);
+
+        mvwprintw(cp_win, 22, 3, "Step 1: Type 'cd <dir>' to move, file name/path to copy, or 'exit' / Esc:");
+        mvwprintw(cp_win, 23, 3, "Source > ");
         wrefresh(cp_win);
 
-        // 1. Get Source Path Input with Esc support
-        int src_idx = 0;
-        memset(src_path, 0, sizeof(src_path));
-        
-        while (1) {
-            mvwprintw(cp_win, 7, 12, "%-50s", ""); // Clear old text
-            mvwprintw(cp_win, 7, 12, "%s", src_path);
-            wmove(cp_win, 7, 12 + strlen(src_path));
-            wrefresh(cp_win);
-
-            int ch = wgetch(cp_win);
-
-            if (ch == 27) { // 27 is the ASCII code for ESC
-                delwin(cp_win);
-                return;
-            } 
-            else if (ch == '\n' || ch == KEY_ENTER) {
-                break;
-            } 
-            else if (ch == KEY_BACKSPACE || ch == 127 || ch == '\b') {
-                if (src_idx > 0) {
-                    src_idx--;
-                    src_path[src_idx] = '\0';
-                }
-            } 
-            else if (ch >= 32 && ch <= 126 && src_idx < sizeof(src_path) - 1) {
-                src_path[src_idx++] = (char)ch;
-                src_path[src_idx] = '\0';
-            }
+        int status = read_line_with_tab(cp_win, 23, 12, 75, src_input, sizeof(src_input), items, n_items);
+        if(status == 0){
+            delwin(cp_win);
+            run_cp(); // Restart the function to refresh the window and items
+            return;
         }
-        
-        // Exit check via string
-        if (strcmp(src_path, "exit") == 0 || strcmp(src_path, "EXIT") == 0) {
+        if (status == -1) {
+            delwin(cp_win);
+            return;
+        }
+
+        if (strcmp(src_input, "exit") == 0 || strcmp(src_input, "EXIT") == 0) {
             break;
         }
 
-        // 2. Get Destination Path Input with Esc support
-        int dest_idx = 0;
-        memset(dest_path, 0, sizeof(dest_path));
+        if (strlen(src_input) == 0) {
+            continue;
+        }
 
-        while (1) {
-            mvwprintw(cp_win, 11, 12, "%-50s", ""); // Clear old text
-            mvwprintw(cp_win, 11, 12, "%s", dest_path);
-            wmove(cp_win, 11, 12 + strlen(dest_path));
-            wrefresh(cp_win);
-
-            int ch = wgetch(cp_win);
-
-            if (ch == 27) { // ESC key
-                delwin(cp_win);
-                return;
-            } 
-            else if (ch == '\n' || ch == KEY_ENTER) {
-                break;
-            } 
-            else if (ch == KEY_BACKSPACE || ch == 127 || ch == '\b') {
-                if (dest_idx > 0) {
-                    dest_idx--;
-                    dest_path[dest_idx] = '\0';
-                }
-            } 
-            else if (ch >= 32 && ch <= 126 && dest_idx < sizeof(dest_path) - 1) {
-                dest_path[dest_idx++] = (char)ch;
-                dest_path[dest_idx] = '\0';
+        // Navigate directories while selecting source
+        if (strncmp(src_input, "cd ", 3) == 0) {
+            char target_dir[256];
+            snprintf(target_dir, sizeof(target_dir), "%s", src_input + 3);
+            if (chdir(target_dir) != 0) {
+                mvwprintw(cp_win, 25, 3, "[Error] Cannot change directory to '%s'!              ", target_dir);
+                wrefresh(cp_win);
+                sleep(1);
             }
+            continue;
         }
 
-        if (strcmp(dest_path, "exit") == 0 || strcmp(dest_path, "EXIT") == 0) {
-            break;
-        }
+        build_path(cwd, src_input, resolved_src, sizeof(resolved_src));
 
-        // 3. Open source file for reading in binary mode
-        FILE *src_file = fopen(src_path, "rb");
+        FILE *src_file = fopen(resolved_src, "rb");
         if (src_file == NULL) {
-            mvwprintw(cp_win, 16, 3, "[Error] Cannot open source file!                      ");
+            mvwprintw(cp_win, 25, 3, "[Error] Cannot open source file!                      ");
             wrefresh(cp_win);
             sleep(1);
             continue;
         }
 
-        // 4. Handle destination if it is a directory
-        char final_dest[512];
-        struct stat st;
-        if (stat(dest_path, &st) == 0 && S_ISDIR(st.st_mode)) {
-            // If destination is a directory, extract filename and append it
-            char *filename = strrchr(src_path, '/');
-            if (filename != NULL) {
-                filename++; // Skip the '/'
-            } else {
-                filename = src_path;
+        // Step 2: Choose destination directory or file path
+        int dest_done = 0;
+        int cancelled = 0;
+
+        while (!dest_done) {
+            werase(cp_win);
+            box(cp_win, 0, 0);
+            mvwprintw(cp_win, 0, 4, " Copy File (CP) ");
+
+            if (getcwd(cwd, sizeof(cwd)) != NULL) {
+                mvwprintw(cp_win, 2, 3, "Current Path: %s", cwd);
             }
-            snprintf(final_dest, sizeof(final_dest), "%s/%s", dest_path, filename);
-        } else {
-            snprintf(final_dest, sizeof(final_dest), "%s", dest_path);
-        }
 
-        // 5. Open destination file for writing in binary mode
-        FILE *dest_file = fopen(final_dest, "wb");
-        if (dest_file == NULL) {
-            mvwprintw(cp_win, 16, 3, "[Error] Cannot create destination file!                 ");
-            fclose(src_file);
+            mvwprintw(cp_win, 3, 3, "Selected Source: %s", resolved_src);
+            mvwprintw(cp_win, 4, 3, "--- [ Current Directory (Folders & Files) ] ---");
+
+            max_name_len = 0;
+            n_items = load_current_dir_items(items, CD_MAX_ITEMS, &max_name_len);
+            draw_dir_items(cp_win, win_width, 6, 3, items, n_items, max_name_len);
+
+            mvwprintw(cp_win, 22, 3, "Step 2: Type 'cd <dir>' to move, or enter destination folder/path:");
+            mvwprintw(cp_win, 23, 3, "Dest   > ");
+            wrefresh(cp_win);
+
+            status = read_line_with_tab(cp_win, 23, 12, 75, dest_input, sizeof(dest_input), items, n_items);
+            if(status == 0){
+            delwin(cp_win);
+            run_cp(); // Restart the function to refresh the window and items
+            return;
+            }
+            if (status == -1) {
+                fclose(src_file);
+                delwin(cp_win);
+                return;
+            }
+
+            if (strcmp(dest_input, "exit") == 0 || strcmp(dest_input, "EXIT") == 0) {
+                cancelled = 1;
+                break;
+            }
+
+            if (strlen(dest_input) == 0) {
+                continue;
+            }
+
+            if (strncmp(dest_input, "cd ", 3) == 0) {
+                char target_dir[256];
+                snprintf(target_dir, sizeof(target_dir), "%s", dest_input + 3);
+                if (chdir(target_dir) != 0) {
+                    mvwprintw(cp_win, 25, 3, "[Error] Cannot change directory to '%s'!              ", target_dir);
+                    wrefresh(cp_win);
+                    sleep(1);
+                }
+                continue;
+            }
+
+            build_path(cwd, dest_input, resolved_dest, sizeof(resolved_dest));
+
+            char final_dest[1024];
+            struct stat st;
+            if (stat(resolved_dest, &st) == 0 && S_ISDIR(st.st_mode)) {
+                char *filename = strrchr(resolved_src, '/');
+                if (filename != NULL) {
+                    filename++;
+                } else {
+                    filename = resolved_src;
+                }
+                snprintf(final_dest, sizeof(final_dest), "%s/%s", resolved_dest, filename);
+            } else {
+                snprintf(final_dest, sizeof(final_dest), "%s", resolved_dest);
+            }
+
+            FILE *dest_file = fopen(final_dest, "wb");
+            if (dest_file == NULL) {
+                mvwprintw(cp_win, 25, 3, "[Error] Cannot create destination file!                 ");
+                wrefresh(cp_win);
+                sleep(1);
+                continue;
+            }
+
+            char buffer[8192];
+            size_t bytesRead;
+            while ((bytesRead = fread(buffer, 1, sizeof(buffer), src_file)) > 0) {
+                fwrite(buffer, 1, bytesRead, dest_file);
+            }
+
+            fclose(dest_file);
+            mvwprintw(cp_win, 25, 3, "[Success] File copied successfully!                     ");
             wrefresh(cp_win);
             sleep(1);
-            continue;
+            dest_done = 1;
         }
 
-        // 6. Copy file content chunk by chunk
-        char buffer[8192];
-        size_t bytesRead;
-        while ((bytesRead = fread(buffer, 1, sizeof(buffer), src_file)) > 0) {
-            fwrite(buffer, 1, bytesRead, dest_file);
-        }
-
-        // Close files
         fclose(src_file);
-        fclose(dest_file);
 
-        // 7. Show success message
-        mvwprintw(cp_win, 16, 3, "[Success] File copied successfully!                     ");
-        wrefresh(cp_win);
-        
-        // Pause briefly before clearing for the next operation
-        sleep(1);
+        if (cancelled) {
+
+            break;
+        }
     }
-    
+
     delwin(cp_win);
 }

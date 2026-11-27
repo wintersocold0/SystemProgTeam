@@ -2,6 +2,7 @@
 
 
 void print_menu(WINDOW *win, int highlight) {
+    werase(win);
     int x = 3, y = 2;
     box(win, 0, 0);
     mvwprintw(win, 0, 4, " Command Helper ");
