@@ -15,13 +15,13 @@ void run_echo() {
     int input_idx = 0;
 
     // Create a pop-up window
-    echo_win = newwin(30, 100, 3, 25);
+    echo_win = recreate_menu_win(NULL);
 
     if (echo_win == NULL) {
         return;
     }
 
-    keypad(echo_win, TRUE);
+
 
     while (1) {//사용자가 방향키를 누르거나 문자 입력할 때마다 화면을 다시그려야하기 때문
         werase(echo_win);// 기존 화면데이터 지우기

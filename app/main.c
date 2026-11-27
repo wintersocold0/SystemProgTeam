@@ -148,7 +148,7 @@ int main() {
                 }else if (highlight == 9) { // echo
                     run_echo();
                     my_menu_win = recreate_menu_win(my_menu_win);
-                }else if (highlight == 10) { // exit
+                }else if (highlight == n_choices) { // exit
                     choice = highlight;
                 } else {
                     // pwd or grep (not implemented yet)
