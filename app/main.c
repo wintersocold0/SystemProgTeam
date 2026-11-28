@@ -11,6 +11,7 @@ char *choices[] = {
     "rm   - Delete files or folders",
     "echo - Display text in the terminal",
     "grep - Search text for specific keywords",
+    "find - Search files and directories",
     "exit - Exit the program"
 };
 int n_choices = sizeof(choices) / sizeof(char *);
@@ -151,6 +152,9 @@ int main() {
                     my_menu_win = recreate_menu_win(my_menu_win);
                 }else if (highlight == 10) { // grep
                     run_grep();
+                    my_menu_win = recreate_menu_win(my_menu_win);
+                }else if (highlight == 11) { // find
+                    run_find();
                     my_menu_win = recreate_menu_win(my_menu_win);
                 }else if (highlight == n_choices) { // exit
                     choice = highlight;
