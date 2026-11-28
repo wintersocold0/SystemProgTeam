@@ -12,6 +12,7 @@ char *choices[] = {
     "echo - Display text in the terminal",
     "grep - Search text for specific keywords",
     "find - Search files and directories",
+    "cat  - Display the contents of a file",
     "exit - Exit the program"
 };
 int n_choices = sizeof(choices) / sizeof(char *);
@@ -155,6 +156,9 @@ int main() {
                     my_menu_win = recreate_menu_win(my_menu_win);
                 }else if (highlight == 11) { // find
                     run_find();
+                    my_menu_win = recreate_menu_win(my_menu_win);
+                }else if (highlight == 12) { // cat
+                    run_cat();
                     my_menu_win = recreate_menu_win(my_menu_win);
                 }else if (highlight == n_choices) { // exit
                     choice = highlight;
