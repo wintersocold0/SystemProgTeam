@@ -4,7 +4,7 @@
 void run_cat() {
     WINDOW *cat_win = recreate_menu_win(NULL);
 
-    char cwd[1024];
+    char cwd[PATH_MAX_LEN];
     int win_width, win_height;
 
     getmaxyx(cat_win, win_height, win_width);
