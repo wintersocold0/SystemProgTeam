@@ -17,6 +17,7 @@ OBJS=$(OBJ_DIR)/main.o \
 	$(OBJ_DIR)/run_rm.o \
 	$(OBJ_DIR)/run_echo.o \
 	$(OBJ_DIR)/run_grep.o \
+	$(OBJ_DIR)/run_find.o \
 	$(OBJ_DIR)/run_cat.o
 
 # 1. 최종 실행 파일 생성
@@ -73,6 +74,10 @@ $(OBJ_DIR)/run_echo.o: app/main.h lib/run_echo.c
 $(OBJ_DIR)/run_grep.o: app/main.h lib/run_grep.c
 	@mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c lib/run_grep.c -o $(OBJ_DIR)/run_grep.o	
+
+$(OBJ_DIR)/run_find.o: app/main.h lib/run_find.c
+	@mkdir -p $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c lib/run_find.c -o $(OBJ_DIR)/run_find.o	
 
 $(OBJ_DIR)/run_cat.o: app/main.h lib/run_cat.c
 	@mkdir -p $(OBJ_DIR)
