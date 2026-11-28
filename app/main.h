@@ -24,7 +24,7 @@ extern int n_choices;
 
 void print_menu(WINDOW *,int);
 void run_ls();
-void run_cd();
+void run_cd();z
 void run_cp();
 void run_mkdir();
 void run_rmdir();
@@ -34,6 +34,8 @@ void run_echo();
 void run_grep();
 void run_find();
 void run_cat();
+void run_head();
+void run_tail();
 void run_who();
 
 #define CD_MAX_ITEMS 256

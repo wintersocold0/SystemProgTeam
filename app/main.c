@@ -13,6 +13,8 @@ char *choices[] = {
     "grep - Search text for specific keywords",
     "find - Search files and directories",
     "cat  - Display the contents of a file",
+    "head - Display the first N lines of a file",
+    "tail - Display the last N lines of a file",
     "who  - Display information about users currently logged in",
     "exit - Exit the program"
 };
@@ -161,6 +163,11 @@ int main() {
                 }else if (highlight == 12) { // cat
                     run_cat();
                     my_menu_win = recreate_menu_win(my_menu_win);
+                }else if (highlight == 13) { // head
+                    run_head();
+                    my_menu_win = recreate_menu_win(my_menu_win);
+                }else if (highlight == 14) { // tail
+                    run_tail();
                 }else if (strncmp(choices[highlight - 1], "who ", 4) == 0) { // who
                     run_who();
                     my_menu_win = recreate_menu_win(my_menu_win);

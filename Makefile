@@ -19,7 +19,9 @@ OBJS=$(OBJ_DIR)/main.o \
 	$(OBJ_DIR)/run_grep.o \
 	$(OBJ_DIR)/run_find.o \
 	$(OBJ_DIR)/run_cat.o \
-	$(OBJ_DIR)/run_who.o 
+	$(OBJ_DIR)/run_who.o  \
+	$(OBJ_DIR)/run_head.o \
+	$(OBJ_DIR)/run_tail.o
 
 # 1. 최종 실행 파일 생성
 all: $(TARGET)
@@ -86,6 +88,14 @@ $(OBJ_DIR)/run_cat.o: app/main.h lib/run_cat.c
 $(OBJ_DIR)/run_who.o: app/main.h lib/run_who.c
 	@mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c lib/run_who.c -o $(OBJ_DIR)/run_who.o
+
+$(OBJ_DIR)/run_head.o: app/main.h lib/run_head.c
+	@mkdir -p $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c lib/run_head.c -o $(OBJ_DIR)/run_head.o
+
+$(OBJ_DIR)/run_tail.o: app/main.h lib/run_tail.c
+	@mkdir -p $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c lib/run_tail.c -o $(OBJ_DIR)/run_tail.o
 
 # 3. clean 작업: 폴더를 삭제함 
 # (-r 옵션: 폴더 내부까지 삭제)
