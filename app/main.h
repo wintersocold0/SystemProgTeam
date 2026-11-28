@@ -34,6 +34,8 @@ void run_echo();
 void run_grep();
 void run_find();
 void run_cat();
+void run_head();
+void run_tail();
 
 #define CD_MAX_ITEMS 256
 
